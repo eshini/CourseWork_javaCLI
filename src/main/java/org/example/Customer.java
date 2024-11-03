@@ -1,30 +1,24 @@
 package org.example;
 public class Customer implements Runnable {
-        private TicketPool ticketPool;
-        private int retrievalRate;
+    private final TicketPool ticketPool;
+    private final int retrievalInterval;
 
-        public Customer(TicketPool ticketPool, int retrievalRate) {
-            this.ticketPool = ticketPool;
-            this.retrievalRate = retrievalRate;
-        }
+    public Customer(TicketPool ticketPool, int retrievalInterval) {
+        this.ticketPool = ticketPool;
+        this.retrievalInterval = retrievalInterval;
+    }
 
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    for (int i = 0; i < retrievalRate; i++) {
-                        String ticket = ticketPool.removeTicket();
-                        if (ticket != null) {
-                            System.out.println(Thread.currentThread().getName() + " purchased " + ticket);
-                        } else {
-                            System.out.println("No tickets available.");
-                        }
-                    }
-                    Thread.sleep(1000); // Wait for the next retrieval attempt
-                } catch (InterruptedException e) {
-                    System.err.println("Customer thread interrupted.");
-                    break;
-                }
+    @Override
+    public void run() {
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
+                String ticket = ticketPool.removeTicket();
+                System.out.println("Customer bought: " + ticket);
+                Thread.sleep(retrievalInterval);
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println("Customer stopped.");
         }
+    }
 }
