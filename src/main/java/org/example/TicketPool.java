@@ -1,34 +1,32 @@
 package org.example;
 
-import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
+import java.util.Queue;
 
+// A class that acts as a 'ticket box' for storing and giving out tickets
 public class TicketPool {
-        private List<String> tickets = Collections.synchronizedList(new LinkedList<>());
-        private int maxCapacity;
+    private final Queue<String> tickets = new LinkedList<>();
 
-        public TicketPool(int maxCapacity) {
-            this.maxCapacity = maxCapacity;
+    // Add a certain number of tickets to the pool
+    public synchronized void addTickets(int count) {
+        for (int i = 0; i < count; i++) {
+            tickets.add("Ticket#" + (tickets.size() + 1));
         }
+        notifyAll(); // Tell everyone waiting for tickets that they are available
+    }
 
-        // Synchronized method for adding tickets
-        public synchronized void addTickets(int number) {
-            for (int i = 0; i < number && tickets.size() < maxCapacity; i++) {
-                tickets.add("Ticket " + (tickets.size() + 1));
+    // Remove one ticket from the pool
+    public synchronized String removeTicket() {
+        while (tickets.isEmpty()) { // If no tickets, wait
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Error: " + e.getMessage());
             }
         }
-
-        // Synchronized method for removing tickets
-        public synchronized String removeTicket() {
-            if (!tickets.isEmpty()) {
-                return tickets.remove(0);
-            }
-            return null;
-        }
-
-        public int getTicketCount() {
-            return tickets.size();
-        }
-
+        return tickets.poll(); // Take out a ticket
+    }
 }
+
+
