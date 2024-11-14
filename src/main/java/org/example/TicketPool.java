@@ -3,7 +3,6 @@ package org.example;
 import java.util.LinkedList;
 import java.util.Queue;
 
-// TicketPool acts as a 'ticket box' for storing and managing tickets
 public class TicketPool {
     private final Queue<String> tickets = new LinkedList<>();
 
@@ -12,30 +11,23 @@ public class TicketPool {
             System.out.println("Max capacity reached, cannot add more tickets.");
             return;
         }
-
         for (int i = 0; i < count; i++) {
             tickets.add("Ticket#" + (tickets.size() + 1));
         }
         notifyAll();
     }
 
-    public synchronized String removeTicket() {
-        while (tickets.isEmpty()) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Error: " + e.getMessage());
-                return null;
-            }
+    public synchronized void removeTicket(int ticketsToBuy) {
+        if (tickets.isEmpty()) {
+                System.out.println("no tickets available.please try again later.");
+                return;
         }
-        return tickets.poll();
+        for (int i = 0; i < ticketsToBuy; i++) {
+            tickets.poll(); // Removes a single ticket from the front of the queue
+        }
     }
 
     public synchronized int getAvailableTickets() {
         return tickets.size();
     }
 }
-
-
-

@@ -1,62 +1,62 @@
 package org.example;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Customer implements Runnable {
     private final TicketPool ticketPool;
-    private final int retrievalInterval;
-    public static List<Transaction> transactionHistory = new ArrayList<>();
+    private final int retrievalRate;
+    private final Configuration config;
     private final Scanner scanner;
-    private String username;
-    private String email;
+    private final TransactionHistory transactionHistory;
 
-    public Customer(TicketPool ticketPool, int retrievalInterval, Scanner scanner) {
+    public Customer(TicketPool ticketPool,Configuration config, Scanner scanner, TransactionHistory transactionHistory) {
         this.ticketPool = ticketPool;
-        this.retrievalInterval = retrievalInterval;
+        this.retrievalRate = config.customerRetrievalRate;
         this.scanner = scanner;
+        this.config = config;
+        this.transactionHistory = transactionHistory;
     }
 
     @Override
     public void run() {
-        customerLogin();
-    }
+        try {
+            System.out.print("Enter Customer Name: ");
+            String username = scanner.nextLine();
 
-    // Handles the customer login and ticket purchasing process
-    private void customerLogin() {
-        System.out.print("Enter Customer Username: ");
-        this.username = scanner.nextLine();
-        System.out.print("Enter Customer Email: ");
-        this.email = scanner.nextLine();
+            int ticketsToBuy;
+            while (true) {
+                int availableTickets = ticketPool.getAvailableTickets();
+                System.out.println("Available tickets: " + availableTickets);
+                System.out.print("Enter number of tickets to buy: ");
+                try {
+                    ticketsToBuy = scanner.nextInt();
+                    scanner.nextLine(); // Clear the newline character
+                    // Validate the number of tickets
+                    if (ticketsToBuy <= 0) {
+                        System.out.println("Error: Number of tickets must be a positive integer.");
+                    } else if (ticketsToBuy > retrievalRate) {
+                        System.out.println("Error: You can only buy up to " + retrievalRate + " tickets at a time.");
+                    } else if (ticketsToBuy > availableTickets) {
+                        System.out.println("Error: Not enough tickets available. Please try a lower amount.");
+                    }
+                    else {
+                        ticketPool.removeTicket(ticketsToBuy);
+                        transactionHistory.addTransaction(new Transaction("Customer", username, ticketsToBuy));
 
-        if (ticketPool.getAvailableTickets() == 0) {
-            System.out.println("No tickets available. Please try again later.");
-            return;
+                        System.out.println("Customer " + username + " bought" + ticketsToBuy + " tickets successfully!");
+                        break; // exit the loop
+
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Error: Please enter a valid positive integer for tickets.");
+                    scanner.nextLine(); // Clear the invalid input
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error occurred in Customer: " + e.getMessage());
         }
-
-        System.out.println("Tickets available: " + ticketPool.getAvailableTickets());
-        System.out.print("Enter number of tickets to purchase: ");
-        int ticketsToPurchase = scanner.nextInt();
-        scanner.nextLine();  // Consume newline
-
-        if (ticketsToPurchase > ticketPool.getAvailableTickets()) {
-            System.out.println("Not enough tickets available. Try a smaller number.");
-            return;
-        }
-
-        // Purchase tickets
-        for (int i = 0; i < ticketsToPurchase; i++) {
-            String ticket = ticketPool.removeTicket();
-            System.out.println("Customer " + username + " bought: " + ticket);
-        }
-        transactionHistory.add(new Transaction("Customer", username, ticketsToPurchase));
-
-        // E-bill simulation
-        System.out.println("Purchase completed! E-bill generated:");
-        System.out.println("Customer: " + username);
-        System.out.println("Tickets Purchased: " + ticketsToPurchase);
-        System.out.println("Total Price: $" + (ticketsToPurchase * 10)); // Assuming a ticket price of $10
-        System.out.println("Purchase Order ID: " + System.currentTimeMillis());
     }
 }
+

@@ -1,42 +1,57 @@
 package org.example;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Vendor implements Runnable {
     private final TicketPool ticketPool;
-    public final int ticketsPerRelease;
-    private final Scanner scanner;
+    private final int ticketsPerRelease;
     private final Configuration config;
-    private String username;
-    private String email;
+    private final Scanner scanner;
+    private final TransactionHistory transactionHistory;
 
-    public Vendor(TicketPool ticketPool, int ticketsPerRelease,  Scanner scanner, Configuration config) {
+    public Vendor(TicketPool ticketPool, Configuration config, Scanner scanner, TransactionHistory transactionHistory) {
         this.ticketPool = ticketPool;
-        this.ticketsPerRelease = ticketsPerRelease;
-        this.scanner = scanner;
+        this.ticketsPerRelease = config.ticketReleaseRate;
         this.config = config;
+        this.scanner = scanner;
+        this.transactionHistory = transactionHistory;
     }
-
     @Override
     public void run() {
-        vendorLogin();
-    }
+        try {
+            System.out.print("Enter your Name: ");
+            String username = scanner.nextLine();
+            System.out.print("Enter the price per ticket($): ");
+            double price = scanner.nextDouble();
+            scanner.nextLine();
 
-    // Handles the vendor login and ticket-adding process
-    private void vendorLogin() {
-        System.out.print("Enter Vendor Username: ");
-        this.username = scanner.nextLine();
-        System.out.print("Enter Vendor Email: ");
-        this.email = scanner.nextLine();
+            int ticketsToAdd;
+            while (true) {
+                System.out.print("Enter number of tickets to add: ");
+                try {
+                    ticketsToAdd = scanner.nextInt();
+                    scanner.nextLine(); // Clear newline character
+                    if (ticketsToAdd <= 0) {
+                        System.out.println("Error: Number of tickets must be a positive integer.");
+                    } else if (ticketsToAdd > ticketsPerRelease) {
+                        System.out.println("Error: You can only add up to " + ticketsPerRelease + " tickets at a time.");
+                    } else {
+                        break;
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Error: Please enter a valid positive integer for tickets.");
+                    scanner.nextLine(); // Clear invalid input
+                }
+            }
 
-        System.out.print("Enter number of tickets to add: ");
-        int ticketsToAdd = scanner.nextInt();
-        scanner.nextLine();  // Consume newline
+            ticketPool.addTickets(ticketsToAdd, config.getMaxTicketCapacity());
+            transactionHistory.addTransaction(new Transaction("Vendor", username, ticketsToAdd));
 
-        ticketPool.addTickets(ticketsToAdd, config.getMaxTicketCapacity());
-        Customer.transactionHistory.add(new Transaction("Vendor", username, ticketsToAdd));
-
-        System.out.println("Vendor " + username + " added " + ticketsToAdd + " tickets.");
+            System.out.println("Vendor " + username + " added " + ticketsToAdd + " tickets successfully!");
+        } catch (Exception e) {
+            System.out.println("Error occurred in Vendor: " + e.getMessage());
+        }
     }
 }
 

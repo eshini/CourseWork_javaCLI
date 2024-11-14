@@ -1,4 +1,5 @@
 package org.example;
+
 public class Transaction {
     private final String type;
     private final String username;
@@ -12,9 +13,9 @@ public class Transaction {
 
     @Override
     public String toString() {
-        if (type.equalsIgnoreCase("vendor")) {
+        if ("vendor".equalsIgnoreCase(type)) {
             return "Tickets added by vendor " + username + ": " + ticketCount + " tickets";
-        } else if (type.equalsIgnoreCase("customer")) {
+        } else if ("customer".equalsIgnoreCase(type)) {
             return "Tickets bought by customer " + username + ": " + ticketCount + " tickets";
         } else {
             return type + " by " + username + ": " + ticketCount + " tickets";
