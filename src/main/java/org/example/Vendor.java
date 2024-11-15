@@ -4,8 +4,9 @@ public class Vendor implements Runnable {
     private final TicketPool ticketPool;
     private final int ticketsPerRelease;
     private final int releaseInterval;
+    private Configuration config;
 
-    public Vendor(TicketPool ticketPool, int ticketsPerRelease, int releaseInterval) {
+    public Vendor(TicketPool ticketPool, int ticketsPerRelease, int releaseInterval ) {
         this.ticketPool = ticketPool;
         this.ticketsPerRelease = ticketsPerRelease;
         this.releaseInterval = releaseInterval;

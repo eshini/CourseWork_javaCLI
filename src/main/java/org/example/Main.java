@@ -129,21 +129,38 @@ public class Main {
         System.out.println("Starting the Ticket System...");
         executorService = Executors.newCachedThreadPool();
 
-        String role = chooseUserRole(scanner);
+        boolean vendorSelected = false;
+        boolean customerSelected = false;
 
-        // Start the selected process based on the user role
-        if ("vendor".equalsIgnoreCase(role)) {
+        // Allow multiple role selection
+        while (true) {
+            String role = chooseUserRole(scanner);
+            if ("vendor".equalsIgnoreCase(role)) {
+                vendorSelected = true;
+            } else if ("customer".equalsIgnoreCase(role)) {
+                customerSelected = true;
+            }
+            System.out.print("Do you want to add another role? (yes/no): ");
+            String anotherRole = scanner.next().trim().toLowerCase();
+            if (!"yes".equalsIgnoreCase(anotherRole)) {
+                break;
+            }
+        }
+
+        // Start Vendor and Customer threads based on selected roles
+        if (vendorSelected) {
             System.out.println("Logged in as Vendor. You will start adding tickets...");
             executorService.execute(new Vendor(ticketPool, config.getTicketReleaseRate(), 1000));
-        } else if ("customer".equalsIgnoreCase(role)) {
+        }
+        if (customerSelected) {
             System.out.println("Logged in as Customer. You will start buying tickets...");
             executorService.execute(new Customer(ticketPool, config.getCustomerRetrievalRate()));
         }
 
-        String command;
+        // Monitor for stop command to shut down the system
         System.out.println("Type 'stop' to end the system:");
         while (true) {
-            command = scanner.nextLine();
+            String command = scanner.nextLine();
             if ("stop".equalsIgnoreCase(command)) {
                 shutdownSystem();
                 break;
@@ -155,7 +172,6 @@ public class Main {
     // Collect settings for the ticket system from the user
     private static Configuration initializeConfig(Scanner scanner) {
         Configuration config = null;
-
         while (true) {
             System.out.print("*************************************************\n");
             System.out.print("*** Welcome to the real-time ticketing system ***\n");
@@ -164,7 +180,6 @@ public class Main {
             String role = scanner.next().trim().toLowerCase();
 
             if ("admin".equals(role)) {
-                // Admin initializes the system parameters
                 System.out.print("Enter total number of tickets: ");
                 int totalTickets = scanner.nextInt();
 
