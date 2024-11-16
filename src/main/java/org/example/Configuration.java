@@ -19,6 +19,7 @@ public class Configuration implements Serializable {
         this.maxTicketCapacity = maxTicketCapacity;
     }
 
+    
     public int getTicketReleaseRate() { return ticketReleaseRate; }
     public int getCustomerRetrievalRate() { return customerRetrievalRate; }
     public int getMaxTicketCapacity() { return maxTicketCapacity; }
