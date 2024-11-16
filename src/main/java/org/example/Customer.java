@@ -1,24 +1,62 @@
 package org.example;
+
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
 public class Customer implements Runnable {
     private final TicketPool ticketPool;
-    private final int retrievalInterval;
+    private final int retrievalRate;
+    private final Configuration config;
+    private final Scanner scanner;
+    private final TransactionHistory transactionHistory;
 
-    public Customer(TicketPool ticketPool, int retrievalInterval) {
+    public Customer(TicketPool ticketPool,Configuration config, Scanner scanner, TransactionHistory transactionHistory) {
         this.ticketPool = ticketPool;
-        this.retrievalInterval = retrievalInterval;
+        this.retrievalRate = config.customerRetrievalRate;
+        this.scanner = scanner;
+        this.config = config;
+        this.transactionHistory = transactionHistory;
     }
 
     @Override
     public void run() {
         try {
-            while (!Thread.currentThread().isInterrupted()) {
-                String ticket = ticketPool.removeTicket();
-                System.out.println("Customer bought: " + ticket);
-                Thread.sleep(retrievalInterval);
+            System.out.print("Enter Customer Name: ");
+            String username = scanner.nextLine();
+
+            int ticketsToBuy;
+            while (true) {
+                int availableTickets = ticketPool.getAvailableTickets();
+                System.out.println("Available tickets: " + availableTickets);
+                System.out.print("Enter number of tickets to buy: ");
+                try {
+                    ticketsToBuy = scanner.nextInt();
+                    scanner.nextLine(); // Clear the newline character
+                    // Validate the number of tickets
+                    if (ticketsToBuy <= 0) {
+                        System.out.println("Error: Number of tickets must be a positive integer.");
+                    } else if (ticketsToBuy > retrievalRate) {
+                        System.out.println("Error: You can only buy up to " + retrievalRate + " tickets at a time.");
+                    } else if (ticketsToBuy > availableTickets) {
+                        System.out.println("Error: Not enough tickets available. Please try a lower amount.");
+                    }
+                    else {
+                        ticketPool.removeTicket(ticketsToBuy);
+                        transactionHistory.addTransaction(new Transaction("Customer", username, ticketsToBuy));
+
+                        System.out.println("Customer " + username + " bought" + ticketsToBuy + " tickets successfully!");
+                        break; // exit the loop
+
+                    }
+                } catch (InputMismatchException e) {
+                    System.out.println("Error: Please enter a valid positive integer for tickets.");
+                    scanner.nextLine(); // Clear the invalid input
+                }
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Customer stopped.");
+
+        } catch (Exception e) {
+            System.out.println("Error occurred in Customer: " + e.getMessage());
         }
     }
 }
+

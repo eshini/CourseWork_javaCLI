@@ -3,30 +3,31 @@ package org.example;
 import java.util.LinkedList;
 import java.util.Queue;
 
-// A class that acts as a 'ticket box' for storing and giving out tickets
 public class TicketPool {
     private final Queue<String> tickets = new LinkedList<>();
 
-    // Add a certain number of tickets to the pool
-    public synchronized void addTickets(int count) {
+    public synchronized void addTickets(int count, int maxCapacity) {
+        if (tickets.size() + count > maxCapacity) {
+            System.out.println("Max capacity reached, cannot add more tickets.");
+            return;
+        }
         for (int i = 0; i < count; i++) {
             tickets.add("Ticket#" + (tickets.size() + 1));
         }
-        notifyAll(); // Tell everyone waiting for tickets that they are available
+        notifyAll();
     }
 
-    // Remove one ticket from the pool
-    public synchronized String removeTicket() {
-        while (tickets.isEmpty()) { // If no tickets, wait
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println("Error: " + e.getMessage());
-            }
+    public synchronized void removeTicket(int ticketsToBuy) {
+        if (tickets.isEmpty()) {
+                System.out.println("no tickets available.please try again later.");
+                return;
         }
-        return tickets.poll(); // Take out a ticket
+        for (int i = 0; i < ticketsToBuy; i++) {
+            tickets.poll(); // Removes a single ticket from the front of the queue
+        }
+    }
+
+    public synchronized int getAvailableTickets() {
+        return tickets.size();
     }
 }
-
-
