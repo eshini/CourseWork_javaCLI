@@ -8,7 +8,7 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        Configuration config = null;
+        Configuration config;
         boolean isSystemStarted = false;
         while (true) {
             System.out.println("...REAL TIME TICKETING SYSTEM...");
@@ -30,8 +30,7 @@ public class Main {
                 }
                 case 2 -> {
                     shutdownSystem(scanner);
-                    scanner.close(); // Close the scanner only here, at the end
-                    return; // Exit the program
+                    return;  // Exit the program
                 }
                 default -> System.out.println("Invalid option, please try again.");
             }
@@ -44,15 +43,15 @@ public class Main {
             System.out.println("1. Vendor Login");
             System.out.println("2. Customer Login");
             System.out.println("3. View Transaction History");
-            System.out.println("4. Stop System");
+            System.out.println("4. Exit");
 
             int choice = getPositiveInt(scanner, "Choose an option: ");
             switch (choice) {
                 case 1 -> vendorLogin(scanner, config);
-                case 2 -> customerLogin(scanner, config);
+                case 2 -> customerLogin(config);
                 case 3 -> displayTransactionHistory();
                 case 4 -> {
-                    shutdownSystem(scanner);
+                    return; // Exit the ticket system menu
                 }
                 default -> System.out.println("Invalid option, please try again.");
             }
@@ -122,7 +121,7 @@ public class Main {
             System.out.println("An error occurred while waiting for the vendor process to complete.");
         }
     }
-    private static void customerLogin(Scanner scanner, Configuration config) {
+    private static void customerLogin( Configuration config) {
         if (ticketPool.getAvailableTickets() <= 0) {
             System.out.println("No tickets available. Please try again later.");
             return; // Return to the main menu
@@ -142,7 +141,8 @@ public class Main {
     }
     private static void shutdownSystem(Scanner scanner) {
         System.out.println("Shutting down the Ticket System...");
+        scanner.close(); // Close the scanner
         System.out.println("System stopped.");
-        scanner.close(); // Close the scanner only here, at the end
+
     }
 }

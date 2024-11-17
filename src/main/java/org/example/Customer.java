@@ -44,7 +44,7 @@ public class Customer implements Runnable {
                         ticketPool.removeTicket(ticketsToBuy);
                         transactionHistory.addTransaction(new Transaction("Customer", username, ticketsToBuy));
 
-                        System.out.println("Customer " + username + " bought" + ticketsToBuy + " tickets successfully!");
+                        System.out.println("Customer " + username + " bought " + ticketsToBuy + " tickets successfully!");
                         break; // exit the loop
 
                     }
