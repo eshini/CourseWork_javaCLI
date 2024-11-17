@@ -48,7 +48,7 @@ public class Vendor implements Runnable {
             ticketPool.addTickets(ticketsToAdd, config.getMaxTicketCapacity());
             transactionHistory.addTransaction(new Transaction("Vendor", username, ticketsToAdd));
 
-            System.out.println("Vendor " + username + " added " + ticketsToAdd + " tickets successfully!");
+            System.out.println("Vendor " + username + " added " + ticketsToAdd + " tickets of price per each $"+price+" successfully!");
         } catch (Exception e) {
             System.out.println("Error occurred in Vendor: " + e.getMessage());
         }
